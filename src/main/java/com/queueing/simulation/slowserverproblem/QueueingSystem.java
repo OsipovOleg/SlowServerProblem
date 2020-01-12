@@ -4,7 +4,6 @@ import com.random.RandomVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.util.*;
 
 public class QueueingSystem {
@@ -23,6 +22,7 @@ public class QueueingSystem {
 
 
     private double averageResponseTime;
+    private double[] aggregate_dist;
 
 
     public QueueingSystem(Random random, int numberOfNodes, int numberOfSiblings, int[] thresholdValues, RandomVariable interarrivalTimeRV, RandomVariable[] serviceTimeRVs) {
@@ -61,7 +61,11 @@ public class QueueingSystem {
      */
     public PerfomanceMeasures start(double time) {
 
+
         LOGGER.info("Simulation is starting");
+
+
+        aggregate_dist = new double[10];
 
 
         currentTime = 0;
@@ -94,6 +98,10 @@ public class QueueingSystem {
             double nextEventTime = Math.min(nextArrivalTime,
                     Math.min(startServiceTime, endServiceTimes[endServiceIndex]));
 
+            if (queue.size() < aggregate_dist.length) {
+                aggregate_dist[queue.size()] += nextEventTime - currentTime;
+            }
+
             //Update current time
             currentTime = nextEventTime;
 
@@ -118,7 +126,9 @@ public class QueueingSystem {
 
 
         averageResponseTime /= leftDemandCounter;
+
         PerfomanceMeasures measures = new PerfomanceMeasures();
+        measures.setAggregateDist(Arrays.stream(aggregate_dist).map(x -> x / time).toArray());
         measures.setResponseTime(averageResponseTime);
         measures.setSampleSize(leftDemandCounter);
         return measures;
