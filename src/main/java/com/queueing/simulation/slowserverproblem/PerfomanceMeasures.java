@@ -13,6 +13,7 @@ public class PerfomanceMeasures {
     private int sampleSize;
 
     private Map<QueueingSystem.State, Double> distribution;
+    private Map<QueueingSystem.State, Double> discreteDistribution;
     private Map<QueueingSystem.State, Double> arrivalDistribution;
     private Map<QueueingSystem.State, Double> leaveDistribution;
     private Map<QueueingSystem.State, Double> startServiceDistribution;
@@ -60,6 +61,10 @@ public class PerfomanceMeasures {
         builder.append("Distribution Prob: ")
                 .append(System.lineSeparator())
                 .append(distributionToString(distribution))
+                .append(System.lineSeparator())
+                .append("Discrete distribution Prob: ")
+                .append(System.lineSeparator())
+                .append(distributionToString(discreteDistribution))
                 .append(System.lineSeparator())
                 .append("Start Service Distribution: ")
                 .append(System.lineSeparator())
@@ -111,5 +116,13 @@ public class PerfomanceMeasures {
 
     public void setStartServiceDistribution(Map<QueueingSystem.State, Double> startServiceDistribution) {
         this.startServiceDistribution = startServiceDistribution;
+    }
+
+    public Map<QueueingSystem.State, Double> getDiscreteDistribution() {
+        return discreteDistribution;
+    }
+
+    public void setDiscreteDistribution(Map<QueueingSystem.State, Double> discreteDistribution) {
+        this.discreteDistribution = discreteDistribution;
     }
 }

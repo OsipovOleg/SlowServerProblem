@@ -57,10 +57,11 @@ public class QueueingSystem {
 
     private Map<State, Double> arrivingDistribution;
     private Map<State, Double> distribution;
+    private Map<State, Double> discreteDistribution;
     private Map<State, Double> leaveDistribution;
     private Map<State, Double> startServiceDistribution;
     private int sampleVolumeForStartServiceDistribution;
-
+    private int sampleVolumeForDiscreteDistr;
 
     public QueueingSystem(Random random, int numberOfNodes, int numberOfSiblings, int[] thresholdValues, RandomVariable interarrivalTimeRV, RandomVariable[] serviceTimeRVs) {
         this.random = random;
@@ -101,6 +102,7 @@ public class QueueingSystem {
 
 
         distribution = new HashMap<>();
+        discreteDistribution = new HashMap<>();
         arrivingDistribution = new HashMap<>();
         leaveDistribution = new HashMap<>();
         startServiceDistribution = new HashMap<>();
@@ -119,6 +121,8 @@ public class QueueingSystem {
         Arrays.fill(endServiceTimes, Double.POSITIVE_INFINITY);
         startServiceTime = Double.POSITIVE_INFINITY;
 
+
+        State previousState = new State(getCurrentState());
 
         while (currentTime <= time) {
             //Time of a next event
@@ -141,15 +145,27 @@ public class QueueingSystem {
             int r = queue.size() / numberOfSiblings;
             averageJobQueueSize += r * delta;
 
-            if (queue.size() < stateBound) {
-                if (currentTime != nextEventTime) {
 
+            if (currentTime != nextEventTime) {
+                State s = new State(getCurrentState());
+                if (!previousState.equals(s)) {
+                    sampleVolumeForDiscreteDistr++;
+                }
 
-                    State s = new State(getCurrentState());
+                if (queue.size() < stateBound) {
                     Double accumulatedTimeForState = distribution.get(s);
                     if (accumulatedTimeForState == null) accumulatedTimeForState = 0.0;
                     accumulatedTimeForState += delta;
                     distribution.put(s, accumulatedTimeForState);
+
+
+                    if (!previousState.equals(s)) {
+                        previousState = s;
+                        accumulatedTimeForState = discreteDistribution.get(s);
+                        if (accumulatedTimeForState == null) accumulatedTimeForState = 0.0;
+                        accumulatedTimeForState++;
+                        discreteDistribution.put(s, accumulatedTimeForState);
+                    }
                 }
             }
 
@@ -184,6 +200,11 @@ public class QueueingSystem {
         measures.setDistribution(distribution.entrySet()
                 .stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() / time)));
+
+
+        measures.setDiscreteDistribution(discreteDistribution.entrySet()
+                .stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() / sampleVolumeForStartServiceDistribution)));
 
         measures.setStartServiceDistribution(startServiceDistribution
                 .entrySet()

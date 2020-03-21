@@ -29,7 +29,7 @@ public class Main {
         int numberOfNodes = mu.length;
         int numberOfSiblings = 2;
 
-        double simulationTime = 10000000;
+        double simulationTime = 100000000;
 
         QueueingSystem queueingSystem = exponentialQS(lambda, numberOfNodes, numberOfSiblings, mu, thresholdValues);
         PerfomanceMeasures measures = queueingSystem.start(simulationTime);
